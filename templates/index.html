@@ -1,0 +1,425 @@
+{% extends "layout.html" %}
+
+{% block title %}Privacy & IP Leak Detector - Test Your Anonymity{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <!-- Hero Section -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-body text-center py-5">
+                <h1 class="display-4 mb-3"><i class="fas fa-shield-alt me-3"></i>Privacy & IP Leak Detector !</h1>
+                
+                <p class="lead mb-4">
+                    Test your online anonymity, detect VPN/proxy leaks, and assess your digital fingerprint.
+                </p>
+                <button id="start-scan" class="btn btn-primary btn-lg me-2">
+                    <i class="fas fa-search me-2"></i>Start Privacy Scan
+                </button>
+                
+                <a href="/extensions" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-puzzle-piece me-2"></i>Extension Compatibility
+                </a>
+                
+                <!-- Progress bar (hidden by default) -->
+                <div id="scan-progress-container" class="mt-4 d-none">
+                    <div class="progress" style="height: 25px;">
+                        <div id="scan-progress" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                        </div>
+                    </div>
+                    <p id="progress-text" class="text-muted mt-2">Initializing scan...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Leak Check -->
+        <div class="card bg-dark border-secondary mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-envelope me-2"></i>Check Your Email for Data Breaches</h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Enter your email address to check if it has been exposed in known data breaches:
+                </p>
+                <form id="email-check-form" class="d-flex">
+                    <input type="email" id="email-input" class="form-control me-2" placeholder="your@email.com" required>
+                    <button type="submit" class="btn btn-outline-primary">Check</button>
+                    <button id="clear-email-cache" type="button" class="btn btn-outline-warning ms-2" title="Clear previous results cache">
+                        <i class="fas fa-redo-alt"></i>
+                    </button>
+                </form>
+                
+                <!-- Email check results will appear here -->
+                <div id="initial-results" class="mt-3"></div>
+                <div class="small text-muted mt-2">
+                    <i class="fas fa-info-circle"></i> If you're seeing outdated results, click the refresh button to clear the cache.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="row mt-5">
+            <div class="col-12 mb-4">
+                <h2 class="text-center mb-4">What We Check</h2>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-globe fa-3x mb-3 text-primary"></i>
+                        <h3 class="card-title h5">IP & Location</h3>
+                        <p class="card-text">
+                            Reveals your public IP address, geolocation, ISP, and connection details.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-secret fa-3x mb-3 text-primary"></i>
+                        <h3 class="card-title h5">VPN & Proxy Detection</h3>
+                        <p class="card-text">
+                            Identifies if you're using a VPN, proxy, or TOR, and checks for leaks.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-fingerprint fa-3x mb-3 text-primary"></i>
+                        <h3 class="card-title h5">Browser Fingerprinting</h3>
+                        <p class="card-text">
+                            Analyzes your browser's digital fingerprint and how unique it is.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-network-wired fa-3x mb-3 text-primary"></i>
+                        <h3 class="card-title h5">WebRTC Leak Test</h3>
+                        <p class="card-text">
+                            Tests for WebRTC leaks that could expose your real IP address.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-code fa-3x mb-3 text-primary"></i>
+                        <h3 class="card-title h5">Header Analysis</h3>
+                        <p class="card-text">
+                            Examines HTTP headers your browser sends and identifies privacy issues.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 bg-dark border-secondary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-pie fa-3x mb-3 text-primary"></i>
+                        <h3 class="card-title h5">Risk Assessment</h3>
+                        <p class="card-text">
+                            Provides an overall anonymity score and suggests improvements.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- New Enhanced Privacy Features -->
+        <div class="card bg-dark border-secondary mt-5">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Enhanced Privacy Features</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead mb-4">
+                    Our new advanced privacy tools help strengthen your anonymity online with detailed guidance on how to implement each feature:
+                </p>
+                
+                <div class="row">
+                    <!-- Browser Fingerprint Randomization -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-random text-primary me-2"></i>Fingerprint Randomization</h4>
+                                <p class="card-text">
+                                    Detects and helps randomize your browser fingerprint to make tracking more difficult.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Install Privacy Badger or Canvas Blocker extensions, or use Firefox with privacy settings enhanced. In Firefox, go to: Settings > Privacy & Security > Custom > Check 'Fingerprinters'">
+                                        <i class="fas fa-info-circle"></i> How to enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- HTTPS Upgrade Checker -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-lock text-primary me-2"></i>HTTPS Upgrade Checker</h4>
+                                <p class="card-text">
+                                    Checks if your connections can be forced to use HTTPS and verifies certificate security.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Install the HTTPS Everywhere extension from EFF to force HTTPS where available. For Chrome: Settings > Security > Enable 'Always use secure connections'. For Firefox: Settings > Privacy & Security > HTTPS-Only Mode > Enable in all windows.">
+                                        <i class="fas fa-info-circle"></i> How to enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- DNS Privacy Check -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-server text-primary me-2"></i>DNS Privacy Checker</h4>
+                                <p class="card-text">
+                                    Detects DNS over HTTPS/TLS support and tests for DNS rebinding vulnerabilities.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Enable DNS over HTTPS in your browser. For Firefox: Settings > General > Network Settings > Enable DNS over HTTPS. For Chrome: Settings > Privacy and security > Security > Use secure DNS. Or use NextDNS or Cloudflare's 1.1.1.1 app.">
+                                        <i class="fas fa-info-circle"></i> How to enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tracker Blocker -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-eye-slash text-primary me-2"></i>Tracker Blocker</h4>
+                                <p class="card-text">
+                                    Identifies third-party trackers and helps block them from monitoring your activity.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Install uBlock Origin (recommended), Privacy Badger, or AdGuard from your browser's extension store. For Firefox users, you can also enable Enhanced Tracking Protection in Settings > Privacy & Security and set it to 'Strict'.">
+                                        <i class="fas fa-info-circle"></i> How to enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Cookie Manager -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-cookie-bite text-primary me-2"></i>Cookie Consent Manager</h4>
+                                <p class="card-text">
+                                    Helps manage cookies and detects supercookies and alternative tracking methods.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Install 'I don't care about cookies' or 'Consent-O-Matic' extensions to automatically handle cookie prompts. In browser settings: Chrome > Settings > Privacy and security > Cookies > Block third-party cookies. Firefox > Settings > Privacy & Security > Custom > Cookies: All third-party trackers.">
+                                        <i class="fas fa-info-circle"></i> How to enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Media Detector -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-share-alt text-primary me-2"></i>Social Media Detector</h4>
+                                <p class="card-text">
+                                    Detects embedded social media buttons and trackers that monitor across websites.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Install Mozilla's Facebook Container for Firefox to isolate Facebook tracking. For all social networks, use Privacy Badger with the social media tracking option enabled. Alternatively, use uBlock Origin with social media filters enabled.">
+                                        <i class="fas fa-info-circle"></i> How to enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- VPN Quality Assessor -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-mask text-primary me-2"></i>VPN Quality Assessor</h4>
+                                <p class="card-text">
+                                    Tests your VPN/proxy for leaks and assesses the quality of your connection.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Use a reputable VPN service like ProtonVPN, Mullvad, or NordVPN. Enable the kill switch feature in your VPN app. For WebRTC protection, install WebRTC Leak Prevention extensions or disable WebRTC in your browser settings. For DNS leak protection, use your VPN's DNS servers.">
+                                        <i class="fas fa-info-circle"></i> How to enable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- WebSocket Leak Detector -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-plug text-primary me-2"></i>WebSocket Leak Detector</h4>
+                                <p class="card-text">
+                                    Checks if WebSocket connections can bypass your privacy protections like VPNs.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="WebSockets can leak your real IP address even when using a VPN. Use a VPN service with WebSocket protection like NordVPN, ExpressVPN, or Mullvad. For additional protection, install uBlock Origin and enable WebSocket blocking in advanced settings.">
+                                        <i class="fas fa-info-circle"></i> How to protect
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Anonymity Timeline -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark border-secondary">
+                            <div class="card-body">
+                                <h4 class="card-title"><i class="fas fa-chart-line text-primary me-2"></i>Anonymity Timeline</h4>
+                                <p class="card-text">
+                                    Tracks your anonymity score over time and shows how changes affect your privacy.
+                                </p>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" 
+                                           title="Run a privacy scan regularly (e.g., weekly) to track changes in your anonymity score. Clear your browsing data regularly (Chrome: Settings > Privacy and security > Clear browsing data, Firefox: Settings > Privacy & Security > Clear Data) and gradually implement the recommended privacy features.">
+                                        <i class="fas fa-info-circle"></i> How to use
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Why This Matters Section -->
+        <div class="card bg-dark border-secondary mt-5">
+            <div class="card-body">
+                <h2 class="card-title">Why Privacy Matters</h2>
+                <p>
+                    Online privacy is increasingly important in today's digital world. When using VPNs or privacy tools,
+                    it's crucial to ensure they're working correctly and not leaking your information.
+                </p>
+                <h5 class="mt-4">Common Privacy Issues:</h5>
+                <ul>
+                    <li><strong>WebRTC Leaks</strong> - Can expose your real IP even when using a VPN</li>
+                    <li><strong>DNS Leaks</strong> - Your DNS requests might bypass your VPN tunnel</li>
+                    <li><strong>Browser Fingerprinting</strong> - Websites can identify you based on browser characteristics</li>
+                    <li><strong>Tracking Headers</strong> - HTTP headers can reveal information about your system</li>
+                </ul>
+                <p class="mt-3">
+                    Our Privacy & IP Leak Detector helps you identify these issues so you can take steps to improve
+                    your online anonymity and security.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Browser fingerprinting script -->
+<script src="{{ url_for('static', filename='js/fingerprint.js') }}"></script>
+
+<!-- WebRTC leak detection script -->
+<script src="{{ url_for('static', filename='js/webrtc_leak.js') }}"></script>
+
+<!-- DNS leak detection script -->
+<script src="{{ url_for('static', filename='js/dns_leak.js') }}"></script>
+
+<!-- Email leak detection script -->
+<script src="{{ url_for('static', filename='js/email_leak.js') }}"></script>
+
+<!-- Cookie tracking detection script -->
+<script src="{{ url_for('static', filename='js/cookie_check.js') }}"></script>
+
+<!-- Canvas fingerprinting detection script -->
+<script src="{{ url_for('static', filename='js/canvas_fingerprint_check.js') }}"></script>
+
+<!-- Browser permissions check script -->
+<script src="{{ url_for('static', filename='js/permission_check.js') }}"></script>
+
+<!-- Do Not Track check script -->
+<script src="{{ url_for('static', filename='js/do_not_track.js') }}"></script>
+
+<!-- Language Location check script -->
+<script src="{{ url_for('static', filename='js/language_check.js') }}"></script>
+
+<!-- User authenticity check scripts -->
+<script src="{{ url_for('static', filename='js/user_authenticity_check.js') }}"></script>
+<script src="{{ url_for('static', filename='js/behavioral_analysis.js') }}"></script>
+<script src="{{ url_for('static', filename='js/antibot_detection_analyzer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/privacy_extensions_analyzer.js') }}"></script>
+
+<!-- Enhanced Privacy Features -->
+<!-- Fingerprint Randomization -->
+<script src="{{ url_for('static', filename='js/fingerprint_randomization.js') }}"></script>
+<!-- HTTPS Upgrade Checker -->
+<script src="{{ url_for('static', filename='js/https_upgrade_checker.js') }}"></script>
+<!-- DNS Privacy Checker -->
+<script src="{{ url_for('static', filename='js/dns_privacy_checker.js') }}"></script>
+<!-- Tracker Blocker -->
+<script src="{{ url_for('static', filename='js/tracker_blocker.js') }}"></script>
+<!-- Cookie Manager -->
+<script src="{{ url_for('static', filename='js/cookie_manager.js') }}"></script>
+<!-- Social Media Detector -->
+<script src="{{ url_for('static', filename='js/social_media_detector.js') }}"></script>
+<!-- VPN Assessor -->
+<script src="{{ url_for('static', filename='js/vpn_assessor.js') }}"></script>
+<!-- WebSocket Leak Detector -->
+<script src="{{ url_for('static', filename='js/websocket_leak.js') }}"></script>
+<!-- Anonymity Timeline -->
+<script src="{{ url_for('static', filename='js/anonymity_timeline.js') }}"></script>
+<!-- Privacy Features Manager -->
+<script src="{{ url_for('static', filename='js/privacy_features.js') }}"></script>
+
+<!-- Main scanner script - must be last to ensure all other scripts are loaded -->
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+
+<!-- Initialize tooltips -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            html: true,
+            placement: 'top',
+            boundary: 'window'
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+});
+</script>
+{% endblock %}

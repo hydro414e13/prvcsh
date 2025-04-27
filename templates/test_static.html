@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Static File Test</h1>
+    <div class="alert alert-info">
+        <p>Testing static file loading...</p>
+        <button onclick="testFingerprint()" class="btn btn-primary">Test Fingerprint.js</button>
+    </div>
+    <div id="result" class="mt-3"></div>
+    <div id="troubleshooting" class="mt-4 d-none">
+        <h4>Troubleshooting Steps:</h4>
+        <ol>
+            <li>Disable ad blockers or privacy extensions temporarily</li>
+            <li>Clear your browser cache</li>
+            <li>Try accessing the script directly: <a href="/static/js/fingerprint.js" target="_blank">fingerprint.js</a></li>
+            <li>Check browser console for additional errors</li>
+        </ol>
+    </div>
+</div>
+
+<script>
+function testFingerprint() {
+    try {
+        if (typeof FingerprintCollector !== 'undefined') {
+            document.getElementById('result').innerHTML = '<div class="alert alert-success">Fingerprint.js loaded successfully!</div>';
+        } else {
+            document.getElementById('result').innerHTML = '<div class="alert alert-danger">Fingerprint.js not loaded! Check troubleshooting steps below.</div>';
+            document.getElementById('troubleshooting').classList.remove('d-none');
+        }
+    } catch (e) {
+        document.getElementById('result').innerHTML = '<div class="alert alert-danger">Error: ' + e.message + '</div>';
+        document.getElementById('troubleshooting').classList.remove('d-none');
+    }
+}
+</script>
+{% endblock %} 

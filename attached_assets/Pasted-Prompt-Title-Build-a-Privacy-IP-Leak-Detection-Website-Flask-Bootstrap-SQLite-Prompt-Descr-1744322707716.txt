@@ -1,0 +1,78 @@
+Prompt Title:
+Build a Privacy & IP Leak Detection Website (Flask + Bootstrap + SQLite)
+
+Prompt Description:
+I want to create a Flask-based website (similar to Whoer.net or ipleak.net) that tests privacy and anonymity for users using proxies/VPNs. The goal is to check for IP leaks, fingerprint leaks, and general traceability, and provide a detailed fraud risk score before accessing sensitive services like PayPal.
+
+⸻
+
+Tech Stack:
+	•	Backend: Python (Flask)
+	•	Frontend: HTML + Bootstrap (for styling and responsive layout)
+	•	Database: SQLite (store logs of checks, user sessions, fraud scores, etc.)
+	•	Client-side JS: For browser-based fingerprinting, WebRTC, etc.
+
+⸻
+
+Core Features:
+
+1. IP & Location Info
+	•	Public IP (IPv4/IPv6)
+	•	City, region, country, timezone
+	•	ISP and ASN info
+	•	Reverse DNS lookup
+	•	Hostname, connection type (residential, business, datacenter)
+	•	Integration with IP location API (e.g., ipapi.co, ipinfo.io)
+
+2. VPN / Proxy / Tor Detection
+	•	Detect if a VPN or proxy is used
+	•	Flag known VPN or datacenter IPs
+	•	Tor exit node detection
+	•	Transparent or anonymous proxy detection
+	•	Show proxy headers like X-Forwarded-For, Via, etc.
+
+3. WebRTC Leak Test
+	•	Get local and public IPs via WebRTC (JavaScript)
+	•	Flag local IPs that leak internal network structure
+
+4. DNS Leak Test
+	•	Detect all DNS servers
+	•	Compare DNS server geolocation to IP geolocation
+	•	Log DNS resolvers that don’t match IP country
+
+5. JavaScript Fingerprinting
+	•	Gather:
+	•	User-Agent
+	•	OS and browser info
+	•	Timezone and language
+	•	Screen resolution, color depth
+	•	Installed fonts
+	•	Canvas fingerprint
+	•	WebGL fingerprint
+	•	AudioContext fingerprint
+	•	Battery API
+	•	Touch support
+	•	Entropy-based uniqueness score (how unique is this fingerprint?)
+
+6. HTTP Header Inspection
+	•	Full list of request headers (browser sends)
+	•	Highlight suspicious or non-standard headers
+
+7. Blacklist & Fraud Check
+	•	Check if IP is listed in:
+	•	Spamhaus
+	•	Project Honey Pot
+	•	AbuseIPDB
+	•	Flag risky ASNs known for abuse
+	•	Fraud score calculation: 0–100 with color code (green/yellow/red)
+
+8. Anonymity / Risk Report
+	•	Progress bar while scanning
+	•	Final anonymity score (based on IP + fingerprint + DNS + headers + blacklist)
+	•	Risk level summary: Safe / Medium Risk / High Risk
+	•	Optional PDF or downloadable JSON summary
+
+9. User Sessions & History (via SQLite)
+	•	Store test results linked to session ID or timestamp
+	•	Allow user to view history of last X checks
+	•	Log IP, test results, and fraud score

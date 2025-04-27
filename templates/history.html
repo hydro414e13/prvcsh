@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+
+{% block title %}Scan History{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h1 class="mb-0"><i class="fas fa-history me-2"></i>Your Scan History</h1>
+            </div>
+            <div class="card-body">
+                {% if scan_results and scan_results|length > 0 %}
+                    <p class="mb-4">Here are your recent privacy scans:</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>IP Address</th>
+                                    <th>Location</th>
+                                    <th>Anonymity Score</th>
+                                    <th>Risk Level</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in scan_results %}
+                                <tr>
+                                    <td>{{ result.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ result.ip_address }}</td>
+                                    <td>{{ result.city }}, {{ result.country }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar 
+                                                {% if result.anonymity_score >= 80 %}bg-success
+                                                {% elif result.anonymity_score >= 50 %}bg-warning
+                                                {% else %}bg-danger{% endif %}"
+                                                 role="progressbar" 
+                                                 style="width: {{ result.anonymity_score }}%;"
+                                                 aria-valuenow="{{ result.anonymity_score }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                {{ result.anonymity_score }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if result.risk_level == 'Low' %}bg-success
+                                            {% elif result.risk_level == 'Medium' %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ result.risk_level }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('results', result_id=result.id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-search me-1"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info" role="alert">
+                        <h4 class="alert-heading"><i class="fas fa-info-circle me-2"></i>No scan history found</h4>
+                        <p>You haven't performed any privacy scans yet. Run a scan to start building your history.</p>
+                        <hr>
+                        <a href="/" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Run a Scan
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-question-circle me-2"></i>About Scan History</h3>
+            </div>
+            <div class="card-body">
+                <p>Your scan history is stored temporarily in your browser session. This allows you to compare results over time to see how your privacy measures are performing.</p>
+                
+                <h5 class="mt-3">Privacy Note</h5>
+                <p>
+                    All scan data is linked to a randomly generated session ID, not to you personally.
+                    The data is stored temporarily for your convenience but is not tied to your identity.
+                </p>
+                
+                <div class="alert alert-secondary mt-3" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Scan history is currently only available for scans performed in this browser session.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

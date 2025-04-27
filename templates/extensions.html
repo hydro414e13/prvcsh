@@ -1,0 +1,178 @@
+{% extends "layout.html" %}
+
+{% block title %}Browser Extension Compatibility Checker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card mb-4">
+            <div class="card-body text-center py-4">
+                <h1 class="mb-4">Browser Extension Compatibility Checker</h1>
+                <p class="lead mb-4">Find the best privacy extensions for your browser and check for compatibility issues.</p>
+                
+                <div class="d-flex justify-content-center mb-4">
+                    <button id="checkExtensionsBtn" class="btn btn-primary btn-lg">
+                        <i class="fas fa-puzzle-piece me-2"></i>Check My Browser
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="feature-card bg-dark border-primary p-4 rounded h-100">
+                            <i class="fas fa-shield-alt text-primary display-4 mb-3"></i>
+                            <h3 class="text-white">Personalized Recommendations</h3>
+                            <p class="text-light">Get tailored privacy extension recommendations based on your specific browser and already installed extensions.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-card bg-dark border-warning p-4 rounded h-100">
+                            <i class="fas fa-exclamation-triangle text-warning display-4 mb-3"></i>
+                            <h3 class="text-white">Conflict Detection</h3>
+                            <p class="text-light">Identify extensions that might conflict with each other, causing performance issues or redundant protection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Extension Compatibility Results Section -->
+        <div id="extension-check-section" class="fade-in">
+            <div id="extension-compatibility-results"></div>
+        </div>
+        
+        <!-- Extension Explainer Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i>Why Browser Extensions Matter</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="mb-3">Types of Privacy Extensions</h4>
+                        <ul class="list-group mb-4">
+                            <li class="list-group-item">
+                                <h5><i class="fas fa-ban text-danger me-2"></i>Content Blockers</h5>
+                                <p class="mb-0">Block ads, trackers, and malicious content. Examples: uBlock Origin, AdBlock Plus</p>
+                            </li>
+                            <li class="list-group-item">
+                                <h5><i class="fas fa-user-secret text-primary me-2"></i>Tracker Blockers</h5>
+                                <p class="mb-0">Target tracking scripts specifically. Examples: Privacy Badger, Disconnect</p>
+                            </li>
+                            <li class="list-group-item">
+                                <h5><i class="fas fa-cookie-bite text-warning me-2"></i>Cookie Managers</h5>
+                                <p class="mb-0">Control which cookies can be stored. Examples: Cookie AutoDelete, I don't care about cookies</p>
+                            </li>
+                            <li class="list-group-item">
+                                <h5><i class="fas fa-fingerprint text-info me-2"></i>Anti-Fingerprinting</h5>
+                                <p class="mb-0">Prevent browser fingerprinting. Examples: Canvas Blocker, Privacy Possum</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h4 class="mb-3">Browser Privacy Comparison</h4>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Browser</th>
+                                        <th>Built-in Privacy</th>
+                                        <th>Extension Support</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Firefox</strong></td>
+                                        <td><span class="badge bg-success">High</span></td>
+                                        <td><span class="badge bg-success">Excellent</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Brave</strong></td>
+                                        <td><span class="badge bg-success">High</span></td>
+                                        <td><span class="badge bg-primary">Good</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Chrome</strong></td>
+                                        <td><span class="badge bg-warning text-dark">Medium</span></td>
+                                        <td><span class="badge bg-success">Excellent</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Edge</strong></td>
+                                        <td><span class="badge bg-warning text-dark">Medium</span></td>
+                                        <td><span class="badge bg-primary">Good</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Safari</strong></td>
+                                        <td><span class="badge bg-primary">Good</span></td>
+                                        <td><span class="badge bg-danger">Limited</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Pro Tip:</strong> A good browsing setup combines both a privacy-focused browser and carefully selected privacy extensions.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Extension Performance Impact Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Impact on Performance</h3>
+            </div>
+            <div class="card-body">
+                <p>While privacy extensions are essential for protection, they can impact your browsing experience in different ways:</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 bg-dark border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-memory text-primary display-4 mb-3"></i>
+                                <h4 class="text-white">Memory Usage</h4>
+                                <p class="text-light">Each extension consumes additional memory. Having too many extensions can slow down your browser, especially on devices with limited RAM.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 bg-dark border-warning">
+                            <div class="card-body text-center">
+                                <i class="fas fa-hourglass-half text-warning display-4 mb-3"></i>
+                                <h4 class="text-white">Page Load Time</h4>
+                                <p class="text-light">Content-blocking extensions analyze each page element before loading, which can increase the initial page load time.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 bg-dark border-danger">
+                            <div class="card-body text-center">
+                                <i class="fas fa-tools text-danger display-4 mb-3"></i>
+                                <h4 class="text-white">Compatibility Issues</h4>
+                                <p class="text-light">Some extensions may conflict with each other or break certain website features, requiring troubleshooting or adjustments.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-success mt-4">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-balance-scale fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5>Finding the Right Balance</h5>
+                            <p class="mb-0">Our compatibility checker helps you find the optimal combination of extensions that provides strong privacy protection without excessive performance impact or redundant functionality.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/extension_compatibility_check.js') }}"></script>
+{% endblock %}

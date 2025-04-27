@@ -1,0 +1,13 @@
+ERROR:app:Error cleaning up database: The current Flask app is not registered with this 'SQLAlchemy' instance. Did you forget to call 'init_app', or did you create multiple 'SQLAlchemy' instances?
+INFO:app:Database cleanup complete. Deleted: (0, 0)
+INFO:werkzeug:127.0.0.1 - - [26/Apr/2025 23:52:41] "←[33mGET / HTTP/1.1←[0m" 404 -
+INFO:werkzeug:127.0.0.1 - - [26/Apr/2025 23:52:41] "←[33mGET /favicon.ico HTTP/1.1←[0m" 404 -email-validator>=2.2.0
+flask>=3.1.0
+flask-sqlalchemy>=3.1.1
+gunicorn>=23.0.0
+ipaddress>=1.0.23
+psycopg2-binary>=2.9.10
+requests>=2.32.3
+sqlalchemy>=2.0.40
+trafilatura>=2.0.0
+werkzeug>=3.1.3 

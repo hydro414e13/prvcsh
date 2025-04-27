@@ -1,0 +1,1126 @@
+{% extends "layout.html" %}
+
+{% block title %}Privacy Scan Results{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Overall Score Card -->
+        <div class="card mb-4 {% if result.risk_level == 'Low' %}risk-low{% elif result.risk_level == 'Medium' %}risk-medium{% else %}risk-high{% endif %}">
+            <div class="card-body text-center py-4">
+                <h1 class="mb-4">Privacy Scan Results</h1>
+                
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <div class="score-gauge mb-3">
+                            <canvas id="scoreGauge" width="150" height="150"></canvas>
+                            <div class="score-value">{{ result.anonymity_score }}</div>
+                        </div>
+                        <h3 class="text-center">Anonymity Score</h3>
+                    </div>
+                    
+                    <!-- New Legitimacy Score Section -->
+                    <div class="col-md-4">
+                        <div class="score-gauge mb-3">
+                            <canvas id="legitimacyGauge" width="150" height="150"></canvas>
+                            <div class="score-value" id="legitimacyValue">{{ legitimacy_data.legitimacy_score }}</div>
+                        </div>
+                        <h3 class="text-center">Legitimacy Score</h3>
+                    </div>
+                    
+                    <div class="col-md-4 text-start">
+                        <h2 class="mb-3">
+                            Risk Level: 
+                            <span class="
+                                {% if result.risk_level == 'Low' %}text-success
+                                {% elif result.risk_level == 'Medium' %}text-warning
+                                {% else %}text-danger{% endif %}
+                            ">
+                                {{ result.risk_level }}
+                            </span>
+                        </h2>
+                        
+                        <div class="mb-3">
+                            <p class="lead">
+                                {% if result.risk_level == 'Low' %}
+                                    Your connection appears to be well-protected. Your privacy measures are working effectively.
+                                {% elif result.risk_level == 'Medium' %}
+                                    Your connection has some privacy issues that could potentially expose your identity.
+                                {% else %}
+                                    Your connection has significant privacy issues. Your real identity could be easily exposed.
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        <!-- Detailed Score Analysis Section -->
+                        <div class="card bg-dark border-secondary mb-3">
+                            <div class="card-header">
+                                <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Privacy Score Analysis</h4>
+                            </div>
+                            <div class="card-body">
+                                <p>Your score of {{ result.anonymity_score }} out of 100 is based on these factors:</p>
+                                
+                                <!-- Score Factors from JSON data -->
+                                {% if score_factors %}
+                                    {% if score_factors.penalties %}
+                                        <h5 class="mt-3 text-danger">
+                                            <i class="fas fa-minus-circle me-2"></i>Privacy Vulnerabilities:
+                                        </h5>
+                                        <ul class="mb-3 text-danger">
+                                            {% for penalty in score_factors.penalties %}
+                                            <li>{{ penalty[0] }} <span class="badge bg-danger">-{{ penalty[1] }} points</span></li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                    
+<!-- Removed bonus section since we're only using penalties -->
+                                {% else %}
+                                    <!-- Fallback if score factors not available -->
+                                    <ul class="mb-0">
+                                        {% if not result.is_vpn and not result.is_proxy and not result.is_tor %}
+                                        <li><i class="fas fa-minus-circle text-danger me-2"></i>No VPN/proxy detected</li>
+                                        {% endif %}
+                                        
+                                        {% if result.has_webrtc_leak %}
+                                        <li><i class="fas fa-minus-circle text-danger me-2"></i>WebRTC is leaking your local IP</li>
+                                        {% endif %}
+                                        
+                                        {% if result.browser_info != 'Firefox' and result.browser_info != 'Tor Browser' %}
+                                        <li><i class="fas fa-minus-circle text-danger me-2"></i>Not using a privacy-focused browser</li>
+                                        {% endif %}
+                                        
+                                        {% if result.tracking_cookies_found %}
+                                        <li><i class="fas fa-minus-circle text-danger me-2"></i>Tracking cookies detected</li>
+                                        {% endif %}
+                                    </ul>
+                                {% endif %}
+                                
+                                <div class="mt-3 small text-muted">
+                                    <p>Starting from a perfect score of 100, points are subtracted based on detected privacy vulnerabilities.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recommendations Section -->
+                        {% if recommendations is defined and recommendations|default([])|length > 0 %}
+                        <div class="mt-4 mb-3">
+                            <h3 class="mb-2"><i class="fas fa-shield-alt me-2"></i>Privacy Improvement Recommendations</h3>
+                            <p class="text-muted">Based on your scan results, here are personalized recommendations to improve your privacy:</p>
+                            
+                            <!-- Recommendations Accordion -->
+                            <div class="accordion" id="recommendationsAccordion">
+                                {% if grouped_recommendations is defined and grouped_recommendations is mapping %}
+                                    {% for category, details in grouped_recommendations.items() %}
+                                        {% if details is mapping and details.name is defined %}
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="heading{{ category }}">
+                                                <button class="accordion-button {% if loop.index > 1 %}collapsed{% endif %}" 
+                                                    type="button" 
+                                                    data-bs-toggle="collapse" 
+                                                    data-bs-target="#collapse{{ category }}" 
+                                                    aria-expanded="{% if loop.index == 1 %}true{% else %}false{% endif %}" 
+                                                    aria-controls="collapse{{ category }}">
+                                                    <i class="fas fa-{% if category == 'connection' %}network-wired{% elif category == 'browser' %}firefox-browser{% elif category == 'fingerprinting' %}fingerprint{% elif category == 'data' %}database{% elif category == 'web' %}globe{% elif category == 'permissions' %}user-shield{% else %}check-square{% endif %} me-2"></i>
+                                                    {{ details.name }} ({% if details.items is defined and details.items is iterable %}{{ details.items|length }}{% else %}0{% endif %})
+                                                </button>
+                                            </h2>
+                                            <div id="collapse{{ category }}" 
+                                                class="accordion-collapse collapse {% if loop.index == 1 %}show{% endif %}" 
+                                                aria-labelledby="heading{{ category }}" 
+                                                data-bs-parent="#recommendationsAccordion">
+                                                <div class="accordion-body">
+                                                    {% if details.items is defined and details.items is iterable %}
+                                                        {% for rec in details.items %}
+                                                            {% if rec is mapping and rec.title is defined and rec.description is defined %}
+                                                            <div class="recommendation-item mb-4 priority-{{ rec.priority|default('medium') }}">
+                                                                <h4>
+                                                                    <span class="badge bg-{% if rec.priority == 'high' %}danger{% elif rec.priority == 'medium' %}warning{% else %}info{% endif %} me-2">
+                                                                        {{ rec.priority|default('Medium')|capitalize }}
+                                                                    </span>
+                                                                    {{ rec.title }}
+                                                                </h4>
+                                                                <p class="ms-4 mt-2">{{ rec.description }}</p>
+                                                                
+                                                                {% if rec.links is defined and rec.links is iterable and rec.links|length > 0 %}
+                                                                <div class="ms-4 small">
+                                                                    <strong>Learn more:</strong>
+                                                                    <ul class="list-inline">
+                                                                        {% for link in rec.links %}
+                                                                            {% if link is mapping and link.url is defined and link.text is defined %}
+                                                                            <li class="list-inline-item me-3">
+                                                                                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+                                                                                    <i class="fas fa-external-link-alt me-1"></i>{{ link.text }}
+                                                                                </a>
+                                                                            </li>
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                    </ul>
+                                                                </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            {% if not loop.last %}<hr>{% endif %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <p class="text-muted">No specific recommendations for this category.</p>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Basic privacy protections are recommended for all users.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                            <div class="alert alert-info mt-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Follow general privacy best practices like using a privacy-focused browser, enabling VPN protection, and regularly updating your software.
+                            </div>
+                        {% endif %}
+                        
+                        <div class="text-end mt-4">
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-redo me-2"></i>Run Another Scan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- IP & Location Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-globe me-2"></i>IP & Location Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th>Public IP</th>
+                                        <td>{{ result.ip_address }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>IP Version</th>
+                                        <td>{{ result.ip_version }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Location</th>
+                                        <td>{{ result.city }}, {{ result.region }}, {{ result.country }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Timezone</th>
+                                        <td>{{ result.timezone }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th>ISP</th>
+                                        <td>{{ result.isp }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>ASN</th>
+                                        <td>{{ result.asn }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Connection Type</th>
+                                        <td>
+                                            {% if result.is_vpn %}
+                                                <span class="badge bg-success">VPN</span>
+                                            {% elif result.is_proxy %}
+                                                <span class="badge bg-info">Proxy</span>
+                                            {% elif result.is_tor %}
+                                                <span class="badge bg-warning">Tor</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Direct</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Privacy Risk Visualization Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Privacy Risk Visualization</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3 text-center">Risk Analysis by Category</h4>
+                    
+                    <!-- Generate data for the risk map -->
+                    {% set risk_areas = [] %}
+                    
+                    {% if result %}
+                        {% set browser_risk = 0 %}
+                        {% set network_risk = 0 %}
+                        {% set vpn_risk = 0 %}
+                        {% set cookies_risk = 0 %}
+                        {% set ip_risk = 0 %}
+                        {% set data_risk = 0 %}
+                        
+                        <!-- Calculate browser risk -->
+                        {% if result.browser_info == 'Firefox' or result.browser_info == 'Tor Browser' %}
+                            {% set browser_risk = browser_risk + 20 %}
+                        {% else %}
+                            {% set browser_risk = browser_risk + 60 %}
+                        {% endif %}
+                        
+                        {% if result.privacy_extensions_detected %}
+                            {% set browser_risk = browser_risk + 10 %}
+                        {% else %}
+                            {% set browser_risk = browser_risk + 30 %}
+                        {% endif %}
+                        
+                        <!-- Calculate network risk -->
+                        {% if result.has_dns_leak %}
+                            {% set network_risk = network_risk + 70 %}
+                        {% else %}
+                            {% set network_risk = network_risk + 30 %}
+                        {% endif %}
+                        
+                        <!-- Calculate VPN risk -->
+                        {% if result.is_vpn or result.is_proxy or result.is_tor %}
+                            {% set vpn_risk = vpn_risk + 20 %}
+                        {% else %}
+                            {% set vpn_risk = vpn_risk + 80 %}
+                        {% endif %}
+                        
+                        <!-- Calculate cookies risk -->
+                        {% if result.tracking_cookies_found %}
+                            {% set cookies_risk = cookies_risk + 70 %}
+                        {% else %}
+                            {% set cookies_risk = cookies_risk + 20 %}
+                        {% endif %}
+                        
+                        {% if result.third_party_cookies_enabled %}
+                            {% set cookies_risk = cookies_risk + 20 %}
+                        {% endif %}
+                        
+                        <!-- Calculate IP risk -->
+                        {% if result.has_webrtc_leak %}
+                            {% set ip_risk = ip_risk + 70 %}
+                        {% else %}
+                            {% set ip_risk = ip_risk + 20 %}
+                        {% endif %}
+                        
+                        <!-- Calculate data risk -->
+                        {% if result.email_leaked %}
+                            {% set data_risk = data_risk + 80 %}
+                        {% endif %}
+                        
+                        {% if result.password_strength_score < 50 %}
+                            {% set data_risk = data_risk + 50 %}
+                        {% endif %}
+                        
+                        <!-- Cap risk levels at 100 -->
+                        {% set browser_risk = [browser_risk, 100] | min %}
+                        {% set network_risk = [network_risk, 100] | min %}
+                        {% set vpn_risk = [vpn_risk, 100] | min %}
+                        {% set cookies_risk = [cookies_risk, 100] | min %}
+                        {% set ip_risk = [ip_risk, 100] | min %}
+                        {% set data_risk = [data_risk, 100] | min %}
+                        
+                        <!-- Add calculated risks to the risk areas array -->
+                        {% set risk_areas = risk_areas + [
+                            {"category": "Browser", "riskLevel": browser_risk},
+                            {"category": "Network", "riskLevel": network_risk},
+                            {"category": "VPN", "riskLevel": vpn_risk},
+                            {"category": "Cookies", "riskLevel": cookies_risk},
+                            {"category": "IP", "riskLevel": ip_risk},
+                            {"category": "Data", "riskLevel": data_risk}
+                        ] %}
+                    {% endif %}
+                    
+                    <!-- Animated Risk Map -->
+                    <div id="riskMap" class="mb-4" data-risk-areas="{{ risk_areas | default([]) | tojson }}"></div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <h4 class="mb-3 text-center">Privacy Penalty Factors</h4>
+                            
+                            <!-- Animated penalties breakdown -->
+                            <div id="penaltiesContainer" class="mb-3">
+                                {% if score_factors is defined and score_factors is mapping and score_factors.penalties is defined and score_factors.penalties is iterable %}
+                                    {% for penalty in score_factors.penalties %}
+                                        {% if penalty is iterable and penalty|length > 1 %}
+                                        <div class="penalty-item p-2 mb-2 rounded">
+                                            <div class="d-flex justify-content-between">
+                                                <div class="penalty-label">
+                                                    <div class="d-flex align-items-center">
+                                                        {{ penalty[0] }}
+                                                        <i class="fas fa-info-circle ms-2 text-primary" 
+                                                           data-bs-toggle="tooltip" 
+                                                           data-bs-placement="top" 
+                                                           title="{% if 'WebRTC' in penalty[0] %}Disable WebRTC in your browser settings or use a WebRTC blocking extension.
+                                                                {% elif 'VPN' in penalty[0] %}Use a reputable VPN service to encrypt your traffic and mask your IP address.
+                                                                {% elif 'DNS' in penalty[0] %}Configure your device to use secure DNS servers (DNS-over-HTTPS or DNS-over-TLS).
+                                                                {% elif 'browser' in penalty[0] %}Consider switching to Firefox or Tor Browser with privacy extensions installed.
+                                                                {% elif 'cookie' in penalty[0] or 'Cookie' in penalty[0] %}Block third-party cookies and use cookie management extensions.
+                                                                {% elif 'header' in penalty[0] %}Enable HTTPS-only mode and visit websites with proper security headers.
+                                                                {% elif 'fingerprint' in penalty[0] %}Use anti-fingerprinting extensions or browsers with built-in fingerprint protection.
+                                                                {% elif 'password' in penalty[0] %}Use a password manager to generate and store strong, unique passwords.
+                                                                {% elif 'email' in penalty[0] %}Change passwords for compromised accounts and consider using email aliases.
+                                                                {% elif 'tracking' in penalty[0] %}Install tracking blockers like Privacy Badger or uBlock Origin.
+                                                                {% elif 'permission' in penalty[0] %}Review and revoke unnecessary browser permissions in your settings.
+                                                                {% else %}Check privacy recommendations section for detailed fix instructions.
+                                                                {% endif %}">
+                                                        </i>
+                                                    </div>
+                                                </div>
+                                                <div class="penalty-value text-danger" data-value="{{ penalty[1] }}">-{{ penalty[1] }} points</div>
+                                            </div>
+                                            <div class="progress mt-1" style="height: 8px;">
+                                                <div class="penalty-bar-fill progress-bar bg-danger" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-center text-muted">No penalty factors available.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Legitimacy Factors Section -->
+                        <div class="col-md-6">
+                            <h4 class="mb-3 text-center">Legitimacy Factors</h4>
+                            
+                            <!-- Legitimacy factors breakdown -->
+                            <div id="legitimacyFactorsContainer" class="mb-3">
+                                {% if legitimacy_data is defined and legitimacy_data.legitimacy_factors is defined and legitimacy_data.legitimacy_factors is iterable %}
+                                    {% for factor in legitimacy_data.legitimacy_factors %}
+                                        {% if factor is iterable and factor|length > 1 %}
+                                        <div class="legitimacy-factor p-2 mb-2 rounded">
+                                            <div class="d-flex justify-content-between">
+                                                <div class="factor-name">
+                                                    <div class="d-flex align-items-center">
+                                                        {{ factor[0] }}
+                                                        <i class="fas fa-info-circle ms-2 text-primary" 
+                                                           data-bs-toggle="tooltip" 
+                                                           data-bs-placement="top" 
+                                                           title="{% if 'Consistent' in factor[0] %}Consistent browser settings indicate normal user behavior rather than botnet activity.
+                                                                {% elif 'Natural' in factor[0] %}Your browsing patterns show natural human behavior, unlike automated systems.
+                                                                {% elif 'Reasonable' in factor[0] %}Your system configuration demonstrates typical user settings without suspicious patterns.
+                                                                {% elif 'Expected' in factor[0] %}Expected behavior patterns make your profile look authentic to websites.
+                                                                {% elif 'Browser' in factor[0] %}Your browser settings are similar to typical users, making you appear legitimate.
+                                                                {% else %}Your online behavior pattern resembles that of a regular human user.
+                                                                {% endif %}">
+                                                        </i>
+                                                    </div>
+                                                </div>
+                                                <div class="factor-impact text-success" data-impact="{{ factor[1] }}">+{{ factor[1] }} points</div>
+                                            </div>
+                                            <div class="progress mt-1" style="height: 8px;">
+                                                <div class="factor-bar-fill progress-bar bg-success" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                    <p class="text-center text-muted">No legitimacy factors available.</p>
+                                {% endif %}
+                                
+                                <div class="alert alert-info mt-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Legitimacy Score:</strong> Measures how much your browsing profile resembles a typical human user rather than an automated system. Higher scores indicate you appear more like a regular internet user.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- VPN/Proxy Detection Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-user-secret me-2"></i>VPN & Proxy Detection</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    {% if result.is_vpn or result.is_proxy or result.is_tor %}
+                                        <i class="fas fa-check-circle text-success fa-3x"></i>
+                                    {% else %}
+                                        <i class="fas fa-times-circle text-danger fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if result.is_vpn or result.is_proxy or result.is_tor %}
+                                            Privacy Service Detected
+                                        {% else %}
+                                            No Privacy Service Detected
+                                        {% endif %}
+                                    </h4>
+                                    <p>
+                                        {% if result.is_vpn %}
+                                            You appear to be using a VPN service.
+                                        {% elif result.is_proxy %}
+                                            You appear to be using a proxy service.
+                                        {% elif result.is_tor %}
+                                            You appear to be using the Tor network.
+                                        {% else %}
+                                            No VPN, proxy, or Tor detected. Your real IP may be exposed.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th>VPN Detected</th>
+                                        <td>
+                                            {% if result.is_vpn %}
+                                                <i class="fas fa-check-circle text-success"></i> Yes
+                                            {% else %}
+                                                <i class="fas fa-times-circle text-danger"></i> No
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Proxy Detected</th>
+                                        <td>
+                                            {% if result.is_proxy %}
+                                                <i class="fas fa-check-circle text-success"></i> Yes ({{ result.proxy_type }})
+                                            {% else %}
+                                                <i class="fas fa-times-circle text-danger"></i> No
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Tor Detected</th>
+                                        <td>
+                                            {% if result.is_tor %}
+                                                <i class="fas fa-check-circle text-success"></i> Yes
+                                            {% else %}
+                                                <i class="fas fa-times-circle text-danger"></i> No
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WebRTC Leak Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-network-wired me-2"></i>WebRTC Leak Test</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    {% if result.has_webrtc_leak %}
+                                        <i class="fas fa-exclamation-triangle text-warning fa-3x"></i>
+                                    {% else %}
+                                        <i class="fas fa-shield-alt text-success fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if result.has_webrtc_leak %}
+                                            WebRTC Leak Detected
+                                        {% else %}
+                                            No WebRTC Leak Detected
+                                        {% endif %}
+                                    </h4>
+                                    <p>
+                                        {% if result.has_webrtc_leak %}
+                                            Your browser is leaking your local IP address through WebRTC.
+                                        {% else %}
+                                            Your browser is not leaking IPs through WebRTC.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Detected IPs:</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Public IP
+                                    <span>{{ result.ip_address }}</span>
+                                </li>
+                                
+                                {% if result.webrtc_local_ip %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center {% if result.has_webrtc_leak %}list-group-item-warning{% endif %}">
+                                    Local IP (WebRTC)
+                                    <span {% if result.has_webrtc_leak %}class="leaked-ip"{% endif %}>{{ result.webrtc_local_ip }}</span>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- DNS Leak Test Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-server me-2"></i>DNS Leak Test</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    {% if result.has_dns_leak %}
+                                        <i class="fas fa-exclamation-triangle text-warning fa-3x"></i>
+                                    {% else %}
+                                        <i class="fas fa-shield-alt text-success fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if result.has_dns_leak %}
+                                            DNS Leak Detected
+                                        {% else %}
+                                            No DNS Leak Detected
+                                        {% endif %}
+                                    </h4>
+                                    <p>
+                                        {% if result.has_dns_leak %}
+                                            Your DNS requests may be leaking outside your VPN tunnel, potentially revealing your browsing activity.
+                                        {% else %}
+                                            Your DNS configuration appears to be secure.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>DNS Servers Used:</h5>
+                            <ul class="list-group">
+                                {% set dns_servers = result.dns_servers|default('[]')|tojson|fromjson %}
+                                {% if dns_servers|length > 0 %}
+                                    {% for server in dns_servers %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center {% if result.has_dns_leak %}list-group-item-warning{% endif %}">
+                                        DNS Server
+                                        <span>{{ server }}</span>
+                                    </li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li class="list-group-item">
+                                        No DNS servers detected
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Privacy Checks Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-user-shield me-2"></i>Additional Privacy Checks</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Do Not Track Check -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    {% if result.do_not_track_tested and not result.do_not_track_enabled %}
+                                        <i class="fas fa-exclamation-triangle text-warning fa-3x"></i>
+                                    {% else %}
+                                        <i class="fas fa-shield-alt text-success fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if result.do_not_track_tested and not result.do_not_track_enabled %}
+                                            Do Not Track Disabled
+                                        {% else %}
+                                            Do Not Track Enabled
+                                        {% endif %}
+                                    </h4>
+                                    <p>
+                                        {% if result.do_not_track_tested and not result.do_not_track_enabled %}
+                                            Your browser is not sending the "Do Not Track" signal to websites. While not all websites honor this setting, enabling it can help reduce tracking.
+                                        {% else %}
+                                            Your browser is sending the "Do Not Track" signal to websites. Some websites will respect this preference and limit tracking.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert bg-dark">
+                                <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>About Do Not Track</h5>
+                                <p class="mb-0">
+                                    Do Not Track (DNT) is a browser setting that requests websites not to track your browsing behavior. While compliance is voluntary, using this setting can enhance privacy with cooperating websites.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- DNS Country Check -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    {% if result.dns_country_tested and result.dns_country_different %}
+                                        <i class="fas fa-exclamation-triangle text-warning fa-3x"></i>
+                                    {% else %}
+                                        <i class="fas fa-shield-alt text-success fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if result.dns_country_tested and result.dns_country_different %}
+                                            DNS Country Mismatch
+                                        {% else %}
+                                            DNS Country Consistent
+                                        {% endif %}
+                                    </h4>
+                                    <p>
+                                        {% if result.dns_country_tested and result.dns_country_different %}
+                                            Your DNS server is located in a different country ({{ result.dns_country }}) than your IP address ({{ result.country }}). This could reveal your attempts to mask your location.
+                                        {% else %}
+                                            Your DNS server location is consistent with your IP address location. This helps maintain your privacy.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert bg-dark">
+                                <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>About DNS Country Checks</h5>
+                                <p class="mb-0">
+                                    When using a VPN or proxy, your DNS server should be in the same country as your apparent IP address. If they differ, it can create a privacy leak that reveals your true location.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Language Location Check -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    {% if result.language_location_tested and result.language_location_different %}
+                                        <i class="fas fa-exclamation-triangle text-warning fa-3x"></i>
+                                    {% else %}
+                                        <i class="fas fa-shield-alt text-success fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if result.language_location_tested and result.language_location_different %}
+                                            Language/Location Mismatch
+                                        {% else %}
+                                            Language/Location Consistent
+                                        {% endif %}
+                                    </h4>
+                                    <p>
+                                        {% if result.language_location_tested and result.language_location_different %}
+                                            Your browser language ({{ result.browser_language }}) doesn't match what would be expected for your apparent location ({{ result.country }}). This could reveal your true location.
+                                        {% else %}
+                                            Your browser language settings are consistent with your apparent location, which helps maintain your privacy.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert bg-dark">
+                                <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>About Language Settings</h5>
+                                <p class="mb-0">
+                                    Your browser reveals its language settings to websites you visit. If these don't match your apparent location (when using a VPN/proxy), it can create a fingerprinting vulnerability.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Leak Test Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-envelope me-2"></i>Email Breach Check</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="d-flex mb-3">
+                                <div class="me-3">
+                                    {% if result.email_check_performed %}
+                                        {% if result.email_leaked %}
+                                            <i class="fas fa-exclamation-circle text-danger fa-3x"></i>
+                                        {% else %}
+                                            <i class="fas fa-check-circle text-success fa-3x"></i>
+                                        {% endif %}
+                                    {% else %}
+                                        <i class="fas fa-info-circle text-muted fa-3x"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h4>
+                                        {% if result.email_check_performed %}
+                                            {% if result.email_leaked %}
+                                                Email Found in Data Breaches
+                                            {% else %}
+                                                Email Not Found in Data Breaches
+                                            {% endif %}
+                                        {% else %}
+                                            No Email Check Performed
+                                        {% endif %}
+                                    </h4>
+                                    <p>
+                                        {% if result.email_check_performed %}
+                                            {% if result.email_leaked %}
+                                                Your email was found in one or more data breaches. Consider changing your passwords.
+                                            {% else %}
+                                                Your email was not found in any known data breaches.
+                                            {% endif %}
+                                        {% else %}
+                                            You can check if your email has appeared in known data breaches on the main page.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            {% if result.email_check_performed and result.email_leaked %}
+                                <h5>Found in Breaches:</h5>
+                                <ul class="list-group">
+                                    {% set breach_sites = result.email_leak_sources|default('[]')|tojson|fromjson %}
+                                    {% if breach_sites|length > 0 %}
+                                        {% for site in breach_sites %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center list-group-item-danger">
+                                            <div>
+                                                <strong>{{ site.name }}</strong>
+                                                {% if site.count %}
+                                                <span class="ms-2 badge bg-dark">{{ site.count|number_format }}</span>
+                                                {% endif %}
+                                                <div class="small text-muted">Exposed user accounts</div>
+                                            </div>
+                                            <span class="badge bg-danger">{{ site.date }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li class="list-group-item">
+                                            No specific breach details available
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            {% else %}
+                                <div class="alert bg-dark">
+                                    <p class="mb-0">To check your email for data breaches, return to the main page and use the Email Breach Check tool.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Browser Fingerprint Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-fingerprint me-2"></i>Browser Fingerprint</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th>Browser</th>
+                                        <td>{{ result.browser_info }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Operating System</th>
+                                        <td>{{ result.os_info }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Screen Resolution</th>
+                                        <td>{{ result.screen_resolution }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th>Language</th>
+                                        <td>{{ result.language }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Timezone</th>
+                                        <td>{{ result.timezone_offset }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>User Agent</th>
+                                        <td>
+                                            <div style="max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                {{ result.user_agent }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- HTTP Headers Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-code me-2"></i>HTTP Headers</h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">These are the HTTP headers your browser sent in the request:</p>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm header-table">
+                            <thead>
+                                <tr>
+                                    <th>Header Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for header, value in headers.items() %}
+                                <tr>
+                                    <th>{{ header }}</th>
+                                    <td>{{ value }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- One-Click Privacy Actions Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-bolt me-2"></i>One-Click Privacy Actions</h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Instantly improve your privacy with these quick actions that help protect your identity online:</p>
+                    
+                    <!-- Quick Actions will be rendered here by privacy_quick_actions.js -->
+                    <div id="privacy-quick-actions"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Enhanced Privacy Features Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-shield-virus me-2"></i>Enhanced Privacy Features</h3>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Your browser has been tested for advanced privacy features that can help protect your online identity:</p>
+                    
+                    <div class="row">
+                        {% for key, name in enhanced_features.items() %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-0 bg-dark rounded">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        {{ name }}
+                                        <i class="fas fa-info-circle ms-2 text-info" 
+                                           data-bs-toggle="tooltip" 
+                                           data-bs-placement="top" 
+                                           title="{% if key == 'fingerprint_randomization' %}
+                                                   Browser Compatibility: Best in Firefox with privacy.resistFingerprinting enabled. Chrome users should consider the Privacy Badger extension.
+                                                 {% elif key == 'https_upgrade' %}
+                                                   Browser Compatibility: Works in all modern browsers. Firefox and Chrome both offer built-in HTTPS-only mode in their security settings.
+                                                 {% elif key == 'dns_privacy' %}
+                                                   Browser Compatibility: Firefox supports DNS over HTTPS by default. Chrome users can enable it in the security settings. Edge supports it in recent versions.
+                                                 {% elif key == 'tracker_blocker' %}
+                                                   Browser Compatibility: Firefox has built-in Enhanced Tracking Protection. All browsers support the uBlock Origin and Privacy Badger extensions.
+                                                 {% elif key == 'cookie_manager' %}
+                                                   Browser Compatibility: All browsers support cookie management. Firefox offers the strictest cookie controls, Chrome offers basic controls.
+                                                 {% elif key == 'social_media_detector' %}
+                                                   Browser Compatibility: Works on all browsers. Firefox container tabs provide additional social media isolation.
+                                                 {% elif key == 'vpn_assessor' %}
+                                                   Browser Compatibility: Works on all browsers, but Chrome may leak WebRTC more than Firefox. Tor Browser offers best protection.
+                                                 {% elif key == 'websocket_leak' %}
+                                                   Browser Compatibility: Firefox with strict privacy settings offers best WebSocket protection. All browsers benefit from a good VPN.
+                                                 {% elif key == 'anonymity_timeline' %}
+                                                   Browser Compatibility: Works across all browsers. Using the same browser consistently provides more accurate tracking of privacy improvements.
+                                                 {% endif %}">
+                                        </i>
+                                    </h5>
+                                    <p class="card-text small">
+                                        {% if key == 'fingerprint_randomization' %}
+                                            Helps prevent websites from tracking you by randomizing your browser fingerprint.
+                                        {% elif key == 'https_upgrade' %}
+                                            Automatically redirects HTTP connections to more secure HTTPS when available.
+                                        {% elif key == 'dns_privacy' %}
+                                            Checks if your DNS queries are secure and protected from monitoring.
+                                        {% elif key == 'tracker_blocker' %}
+                                            Detects and blocks website trackers that monitor your online behavior.
+                                        {% elif key == 'cookie_manager' %}
+                                            Analyzes and manages cookies to protect your privacy and prevent tracking.
+                                        {% elif key == 'social_media_detector' %}
+                                            Identifies social media trackers that could be following you across websites.
+                                        {% elif key == 'vpn_assessor' %}
+                                            Evaluates the effectiveness of your VPN connection for privacy protection.
+                                        {% elif key == 'websocket_leak' %}
+                                            Tests if WebSocket connections could be leaking your private information.
+                                        {% elif key == 'anonymity_timeline' %}
+                                            Tracks changes in your anonymity score over time.
+                                        {% endif %}
+                                    </p>
+                                    <div class="feature-status mt-3">
+                                        <span class="badge rounded-pill bg-primary">
+                                            <i class="fas fa-check me-1"></i>Active
+                                        </span>
+                                        <span class="badge rounded-pill bg-success ms-1">
+                                            <i class="fas fa-browser me-1"></i>{{ result.browser_info }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="alert alert-info mt-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Browser Privacy Features:</strong> These advanced privacy features are now available in the background. Hover over the info icons for browser-specific compatibility information. 
+                        {% if result.browser_info == "Firefox" %}
+                            <span class="text-success"><i class="fas fa-check-circle me-1"></i>You're using Firefox, which offers excellent privacy protection when properly configured!</span>
+                        {% elif result.browser_info == "Tor Browser" %}
+                            <span class="text-success"><i class="fas fa-check-circle me-1"></i>You're using Tor Browser, which provides maximum privacy protection!</span>
+                        {% else %}
+                            <span class="text-primary">For maximum privacy benefit, consider switching to Firefox with privacy extensions or Tor Browser.</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommendations Section -->
+        <div class="detail-section">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommendations</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% if not result.is_vpn and not result.is_proxy and not result.is_tor %}
+                        <li class="list-group-item">
+                            <i class="fas fa-shield-alt text-primary me-2"></i>
+                            <strong>Use a VPN</strong> - Your connection is not protected by a VPN or proxy. Consider using a trusted VPN service.
+                        </li>
+                        {% endif %}
+                        
+                        {% if result.has_webrtc_leak %}
+                        <li class="list-group-item">
+                            <i class="fas fa-plug text-primary me-2"></i>
+                            <strong>Fix WebRTC leaks</strong> - Install a browser extension that prevents WebRTC leaks or disable WebRTC in your browser settings.
+                        </li>
+                        {% endif %}
+                        
+                        {% if result.has_dns_leak %}
+                        <li class="list-group-item">
+                            <i class="fas fa-server text-primary me-2"></i>
+                            <strong>Fix DNS leaks</strong> - Configure your VPN to handle DNS requests or use a secure DNS provider like 1.1.1.1 (Cloudflare) or 8.8.8.8 (Google).
+                        </li>
+                        {% endif %}
+                        
+                        {% if result.email_leaked %}
+                        <li class="list-group-item">
+                            <i class="fas fa-key text-primary me-2"></i>
+                            <strong>Update your passwords</strong> - Your email was found in data breaches. Change passwords on important accounts and enable two-factor authentication.
+                        </li>
+                        {% endif %}
+                        
+                        {% if result.browser_info != "Firefox" and result.browser_info != "Tor Browser" %}
+                        <li class="list-group-item">
+                            <i class="fas fa-browser text-primary me-2"></i>
+                            <strong>Consider a privacy-focused browser</strong> - Firefox with privacy extensions or Tor Browser provide better fingerprinting protection.
+                        </li>
+                        {% endif %}
+                        
+                        <li class="list-group-item">
+                            <i class="fas fa-cookie-bite text-primary me-2"></i>
+                            <strong>Use anti-fingerprinting tools</strong> - Consider extensions like Privacy Badger, uBlock Origin, or Canvas Blocker to reduce fingerprinting.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Risk Visualization JavaScript -->
+<script src="{{ url_for('static', filename='js/risk_visualization.js') }}"></script>
+
+<!-- Privacy Quick Actions -->
+<script src="{{ url_for('static', filename='js/privacy_quick_actions.js') }}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Bootstrap tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Cleanup Chart.js instances before initializing new ones
+        // This prevents conflicts with our custom canvas visualizations
+        if (window.scoreChart) {
+            window.scoreChart.destroy();
+        }
+    });
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/risk_visualization.js') }}"></script>
+{% endblock %}

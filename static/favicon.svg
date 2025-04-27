@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background shield -->
+  <path d="M16,2 L4,7 L4,14 C4,21.732 9.125,29.062 16,31 C22.875,29.062 28,21.732 28,14 L28,7 L16,2 Z" 
+        fill="#4a5568" stroke="#2d3748" stroke-width="1" />
+  
+  <!-- Privacy/eye icon -->
+  <g transform="translate(8, 10)" fill="#ffffff">
+    <!-- Eye shape -->
+    <ellipse cx="8" cy="6" rx="8" ry="6" fill="#3182ce" />
+    <!-- Iris -->
+    <circle cx="8" cy="6" r="3" fill="#1a365d" />
+    <!-- Pupil -->
+    <circle cx="8" cy="6" r="1.5" fill="#000000" />
+    <!-- Privacy slash -->
+    <path d="M1,11 L15,1" stroke="#e53e3e" stroke-width="2" stroke-linecap="round" />
+  </g>
+</svg>

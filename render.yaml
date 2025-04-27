@@ -1,0 +1,24 @@
+services:
+  # Web service
+  - type: web
+    name: privacy-detector
+    env: python
+    buildCommand: pip install poetry && poetry install --no-interaction --no-ansi
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 main:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.4"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: privacy-detector-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+    healthCheckPath: /
+    autoDeploy: true
+
+databases:
+  - name: privacy-detector-db
+    plan: free
+    databaseName: privacy_detector
+    user: privacy_user

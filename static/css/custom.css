@@ -1,0 +1,300 @@
+/* Custom styles for the Privacy Leak Detector */
+
+/* Progress bar animation */
+.progress-bar {
+    transition: width 0.5s ease-in-out;
+}
+
+/* Results card styling */
+.result-card {
+    transition: all 0.3s ease;
+    border-left: 5px solid #6c757d;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Risk level indicators */
+.risk-low {
+    border-color: #28a745;
+    border-left-width: 5px;
+}
+
+.risk-medium {
+    border-color: #ffc107;
+    border-left-width: 5px;
+}
+
+.risk-high {
+    border-color: #dc3545;
+    border-left-width: 5px;
+}
+
+/* Score gauge */
+.score-gauge {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+}
+
+.score-gauge .score-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Detail sections */
+.detail-section {
+    margin-bottom: 2rem;
+}
+
+.detail-section h3 {
+    border-bottom: 2px solid rgba(var(--bs-secondary-rgb), 0.3);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Leaked IP highlighting */
+.leaked-ip {
+    color: var(--bs-danger);
+    font-weight: bold;
+}
+
+/* Header table styling */
+.header-table th {
+    width: 30%;
+}
+
+/* Animation for scan section */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Recommendation styles */
+.recommendation-item {
+    padding: 15px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.recommendation-item:hover {
+    background-color: rgba(var(--bs-dark-rgb), 0.05);
+}
+
+.recommendation-item h4 {
+    display: flex;
+    align-items: center;
+    font-size: 1.25rem;
+}
+
+.recommendation-item .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Priority indicators for recommendations */
+.priority-high {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.priority-medium {
+    border-left: 4px solid var(--bs-warning);
+}
+
+.priority-low {
+    border-left: 4px solid var(--bs-info);
+}
+
+/* Risk visualization styles */
+#riskMap {
+    min-height: 300px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+#riskMap svg {
+    overflow: visible;
+}
+
+.penalty-item, .legitimacy-factor {
+    background-color: rgba(var(--bs-dark-rgb), 0.03);
+    transform: translateX(-20px);
+    opacity: 0;
+    transition: all 0.5s ease;
+}
+
+.penalty-item {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.legitimacy-factor {
+    border-left: 4px solid var(--bs-info);
+}
+
+.animate-penalty, .animate-legitimacy {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.penalty-bar-fill, .factor-bar-fill {
+    transition: width 1s ease-out;
+}
+
+.penalty-label, .factor-name {
+    font-weight: 500;
+}
+
+#riskDetailModal .modal-content {
+    border: none;
+    border-radius: 10px;
+}
+
+/* Tooltip enhancements for fix suggestions */
+.privacy-tooltip .tooltip-inner {
+    background-color: #343a40;
+    color: #fff;
+    padding: 10px;
+    max-width: 300px;
+    font-size: 0.9rem;
+    text-align: left;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-left: 4px solid var(--bs-primary);
+}
+
+.privacy-tooltip .tooltip-arrow::before {
+    border-top-color: #343a40;
+}
+
+/* Help cursor for info icons */
+.fa-info-circle {
+    cursor: help;
+    transition: color 0.2s ease;
+}
+
+.fa-info-circle:hover {
+    color: var(--bs-primary) !important;
+}
+
+/* Quick Actions styling */
+.action-card {
+    transition: all 0.3s ease;
+    background-color: #2b3035;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.action-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.action-card .card-text {
+    font-size: 0.9rem;
+    color: #adb5bd;
+}
+
+.quick-action-btn {
+    transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+}
+
+.unsupported-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: calc(0.375rem - 1px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.action-card:hover .unsupported-overlay {
+    opacity: 1;
+}
+
+.unsupported-message {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.action-results {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+.action-results .alert {
+    animation: slideDown 0.3s ease forwards;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .score-gauge {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .score-gauge .score-value {
+        font-size: 1.5rem;
+    }
+    
+    .recommendation-item h4 {
+        font-size: 1.1rem;
+    }
+    
+    .action-card .card-title {
+        font-size: 1rem;
+    }
+    
+    .action-card .card-text {
+        font-size: 0.85rem;
+    }
+}
