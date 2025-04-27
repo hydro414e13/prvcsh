@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 3002
 
-CMD ["gunicorn", "--bind", "0.0.0.0:3002", "--workers", "4", "main:app"] 
+CMD ["gunicorn", "--bind", "0.0.0.0:3002", "--workers", "4", "app:app"] 
